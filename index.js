@@ -21,8 +21,11 @@ app.get('/', (req, res) => {
     res.json({ message: 'Book Store API is running 🚀', version: '2.0.0' });
 });
 
+const cartRoutes = require('./routes/cartRoutes');
+
 app.use('/api/books', bookRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/cart', cartRoutes);
 
 // ─── Error Handling Middleware (must be last) ─────────────────────────────────
 app.use(notFound);
