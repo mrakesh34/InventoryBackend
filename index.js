@@ -22,10 +22,14 @@ app.get('/', (req, res) => {
 });
 
 const cartRoutes = require('./routes/cartRoutes');
+const addressRoutes = require('./routes/addressRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 
 app.use('/api/books', bookRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/addresses', addressRoutes);
+app.use('/api/orders', orderRoutes);
 
 // ─── Error Handling Middleware (must be last) ─────────────────────────────────
 app.use(notFound);

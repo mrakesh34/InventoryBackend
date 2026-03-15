@@ -6,7 +6,9 @@ const Book = require('../models/Book');
 // @access  Private
 const getCart = async (req, res, next) => {
     try {
-        const userEmail = req.user.email;
+        const userEmail = req.user?.email || req.user?.userEmail || req.user?._id;
+        if (!userEmail) return res.status(401).json({ error: 'User email not found in token' });
+        
         let cart = await Cart.findOne({ user: userEmail }).populate('items.book');
         
         if (!cart) {
@@ -24,7 +26,9 @@ const getCart = async (req, res, next) => {
 // @access  Private
 const addToCart = async (req, res, next) => {
     try {
-        const userEmail = req.user.email;
+        const userEmail = req.user?.email || req.user?.userEmail || req.user?._id;
+        if (!userEmail) return res.status(401).json({ error: 'User email not found in token' });
+        
         const { bookId, quantity = 1 } = req.body;
 
         if (!bookId) {
@@ -72,7 +76,9 @@ const addToCart = async (req, res, next) => {
 // @access  Private
 const updateCartItem = async (req, res, next) => {
     try {
-        const userEmail = req.user.email;
+        const userEmail = req.user?.email || req.user?.userEmail || req.user?._id;
+        if (!userEmail) return res.status(401).json({ error: 'User email not found in token' });
+        
         const { bookId } = req.params;
         const { quantity } = req.body;
 
@@ -105,7 +111,9 @@ const updateCartItem = async (req, res, next) => {
 // @access  Private
 const removeFromCart = async (req, res, next) => {
     try {
-        const userEmail = req.user.email;
+        const userEmail = req.user?.email || req.user?.userEmail || req.user?._id;
+        if (!userEmail) return res.status(401).json({ error: 'User email not found in token' });
+        
         const { bookId } = req.params;
 
         const cart = await Cart.findOne({ user: userEmail });
@@ -129,7 +137,8 @@ const removeFromCart = async (req, res, next) => {
 // @access  Private
 const clearCart = async (req, res, next) => {
     try {
-        const userEmail = req.user.email;
+        const userEmail = req.user?.email || req.user?.userEmail || req.user?._id;
+        if (!userEmail) return res.status(401).json({ error: 'User email not found in token' });
         
         const cart = await Cart.findOne({ user: userEmail });
         if (cart) {

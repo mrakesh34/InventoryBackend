@@ -16,7 +16,7 @@ const generateToken = (user) =>
 // @access  Public
 const signup = async (req, res, next) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, role } = req.body;
 
         if (!name || !email || !password) {
             res.status(400);
@@ -37,7 +37,12 @@ const signup = async (req, res, next) => {
         // Hash password in the controller (avoids Mongoose 9 pre-save hook issues)
         const hashedPassword = bcrypt.hashSync(password, 10);
 
-        const user = await User.create({ name, email, password: hashedPassword });
+        const userData = { name, email, password: hashedPassword };
+        if (role && ['user', 'admin'].includes(role)) {
+            userData.role = role;
+        }
+
+        const user = await User.create(userData);
 
         const token = generateToken(user);
         res.status(201).json({
