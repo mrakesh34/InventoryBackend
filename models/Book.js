@@ -40,6 +40,16 @@ const bookSchema = new mongoose.Schema(
             max: 5,
             default: 0,
         },
+        stock: {
+            type: Number,
+            default: 0,
+            min: 0,
+        },
+        lowStockThreshold: {
+            type: Number,
+            default: 5,
+            min: 1,
+        },
     },
     {
         timestamps: true, // createdAt, updatedAt

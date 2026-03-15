@@ -3,6 +3,7 @@ const Cart = require('../models/Cart');
 const Book = require('../models/Book');
 const Address = require('../models/Address');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { logStockActivity } = require('./stockActivityController');
 
 // Helper to calculate total from cart items and DB prices
 const calculateCartTotal = async (cartItems) => {
@@ -107,6 +108,26 @@ const createOrder = async (req, res, next) => {
             orderStatus: 'Pending',
             stripePaymentIntentId: paymentIntentId
         });
+
+        // Decrement stock for each item and log activity
+        for (const item of items) {
+            const book = await Book.findById(item.book);
+            if (book) {
+                const stockBefore = book.stock ?? 0;
+                const stockAfter = Math.max(0, stockBefore - item.quantity);
+                await Book.findByIdAndUpdate(item.book, { stock: stockAfter });
+                await logStockActivity({
+                    bookId: book._id,
+                    bookTitle: book.bookTitle,
+                    type: 'stock_out',
+                    quantity: item.quantity,
+                    stockBefore,
+                    stockAfter,
+                    performedBy: userEmail,
+                    note: `User purchase — Order #${order._id.toString().slice(-8).toUpperCase()}`,
+                });
+            }
+        }
 
         // Clear the user's cart
         cart.items = [];

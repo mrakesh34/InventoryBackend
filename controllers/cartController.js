@@ -43,6 +43,22 @@ const addToCart = async (req, res, next) => {
 
         let cart = await Cart.findOne({ user: userEmail });
         
+        let currentQtyInCart = 0;
+        let itemIndex = -1;
+
+        if (cart) {
+            itemIndex = cart.items.findIndex(item => item.book.toString() === bookId);
+            if (itemIndex > -1) {
+                currentQtyInCart = cart.items[itemIndex].quantity;
+            }
+        }
+
+        const requestedTotalQty = currentQtyInCart + Number(quantity);
+
+        if (requestedTotalQty > (book.stock ?? 0)) {
+            return res.status(400).json({ error: `Cannot add more units. Only ${book.stock ?? 0} in stock.` });
+        }
+
         if (!cart) {
             // Create new cart
             cart = await Cart.create({
@@ -50,12 +66,9 @@ const addToCart = async (req, res, next) => {
                 items: [{ book: bookId, quantity }]
             });
         } else {
-            // Cart exists, check if item already exists
-            const itemIndex = cart.items.findIndex(item => item.book.toString() === bookId);
-            
             if (itemIndex > -1) {
                 // Item exists, increase quantity
-                cart.items[itemIndex].quantity += Number(quantity);
+                cart.items[itemIndex].quantity = requestedTotalQty;
             } else {
                 // Item does not exist, add it
                 cart.items.push({ book: bookId, quantity });
@@ -84,6 +97,15 @@ const updateCartItem = async (req, res, next) => {
 
         if (quantity < 1) {
             return res.status(400).json({ error: 'Quantity must be at least 1' });
+        }
+
+        const book = await Book.findById(bookId);
+        if (!book) {
+            return res.status(404).json({ error: 'Book not found' });
+        }
+
+        if (quantity > (book.stock ?? 0)) {
+            return res.status(400).json({ error: `Requested quantity exceeds available stock (${book.stock ?? 0})` });
         }
 
         const cart = await Cart.findOne({ user: userEmail });

@@ -8,6 +8,7 @@ const {
     createBook,
     updateBook,
     deleteBook,
+    updateBookStock,
 } = require('../controllers/bookController');
 
 const { protect } = require('../middleware/authMiddleware');
@@ -19,6 +20,7 @@ router.get('/:id', getBookById);
 
 // Protected routes (require login)
 router.post('/', protect, createBook);
+router.patch('/:id/stock', protect, updateBookStock);   // ← stock update (before /:id)
 router.patch('/:id', protect, updateBook);
 router.delete('/:id', protect, deleteBook);
 

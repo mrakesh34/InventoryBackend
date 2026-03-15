@@ -12,11 +12,12 @@ const {
 
 router.post('/create-payment-intent', protect, createPaymentIntent);
 router.post('/', protect, createOrder);
-router.get('/my-orders', protect, getUserOrders);
-router.get('/:id', protect, getOrderById);
 
-// Admin routes
-router.get('/all-orders', protect, adminOnly, getAllOrders);
+// ⚠️ Named routes MUST come before /:id wildcard
+router.get('/my-orders', protect, getUserOrders);
+router.get('/all-orders', protect, adminOnly, getAllOrders);  // ← moved up before /:id
+
+router.get('/:id', protect, getOrderById);
 router.patch('/:id/status', protect, adminOnly, updateOrderStatus);
 
 module.exports = router;

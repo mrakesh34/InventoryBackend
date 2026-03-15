@@ -1,4 +1,5 @@
 const Book = require('../models/Book');
+const { logStockActivity } = require('./stockActivityController');
 
 // Dummy books for seeding
 const dummyBooks = [
@@ -200,4 +201,52 @@ const deleteBook = async (req, res, next) => {
     }
 };
 
-module.exports = { seedBooks, getAllBooks, getBookById, createBook, updateBook, deleteBook };
+// @desc    Update book stock and/or low-stock threshold
+// @route   PATCH /api/books/:id/stock
+// @access  Private (admin)
+const updateBookStock = async (req, res, next) => {
+    try {
+        const { stock, lowStockThreshold } = req.body;
+
+        const book = await Book.findById(req.params.id);
+        if (!book) {
+            res.status(404);
+            throw new Error('Book not found');
+        }
+
+        const stockBefore = book.stock ?? 0;
+        const updateFields = {};
+        if (stock !== undefined) updateFields.stock = Math.max(0, Number(stock));
+        if (lowStockThreshold !== undefined) updateFields.lowStockThreshold = Math.max(1, Number(lowStockThreshold));
+
+        const updated = await Book.findByIdAndUpdate(
+            req.params.id,
+            { $set: updateFields },
+            { new: true, runValidators: true }
+        );
+
+        const stockAfter = updated.stock;
+        const qty = Math.abs(stockAfter - stockBefore);
+        const adminEmail = req.user?.email || req.user?.userEmail || 'admin';
+
+        if (qty > 0) {
+            await logStockActivity({
+                bookId: updated._id,
+                bookTitle: updated.bookTitle,
+                type: stockAfter >= stockBefore ? 'stock_in' : 'stock_out',
+                quantity: qty,
+                stockBefore,
+                stockAfter,
+                performedBy: adminEmail,
+                note: `Admin restock by ${adminEmail}`,
+            });
+        }
+
+        const isLowStock = updated.stock <= updated.lowStockThreshold;
+        res.json({ ...updated.toObject(), isLowStock });
+    } catch (error) {
+        next(error);
+    }
+};
+
+module.exports = { seedBooks, getAllBooks, getBookById, createBook, updateBook, deleteBook, updateBookStock };
