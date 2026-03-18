@@ -42,7 +42,10 @@ app.use('/api/upload', uploadRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-// ─── Start Server ─────────────────────────────────────────────────────────────
-app.listen(port, () => {
-    console.log(`📚 Book Store Server running on port ${port}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(port, () => {
+        console.log(`📚 Book Store Server running on port ${port}`);
+    });
+}
+
+module.exports = app;
