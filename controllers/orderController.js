@@ -2,7 +2,12 @@ const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Book = require('../models/Book');
 const Address = require('../models/Address');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+let stripe;
+if (process.env.STRIPE_SECRET_KEY) {
+    stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+} else {
+    console.warn("⚠️ STRIPE_SECRET_KEY is missing. Stripe features will fail if called.");
+}
 const { logStockActivity } = require('./stockActivityController');
 
 // Helper to calculate total from cart items and DB prices
@@ -38,6 +43,10 @@ const createPaymentIntent = async (req, res, next) => {
         }
 
         const { total } = await calculateCartTotal(cart.items);
+
+        if (!stripe) {
+            return res.status(500).json({ error: 'Stripe is not configured on the server. Please add STRIPE_SECRET_KEY to environment variables.' });
+        }
 
         // Create a PaymentIntent with the order amount and currency
         // Amount must be in cents (e.g., $10 = 1000)
@@ -83,6 +92,10 @@ const createOrder = async (req, res, next) => {
             return res.status(404).json({ error: 'Address not found or unauthorized' });
         }
 
+        if (!stripe) {
+            return res.status(500).json({ error: 'Stripe is not configured on the server.' });
+        }
+        
         // Verify payment intent with Stripe (optional but recommended)
         const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
