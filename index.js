@@ -13,7 +13,10 @@ const port = process.env.PORT || 5000;
 connectDB();
 
 // ─── Global Middleware ────────────────────────────────────────────────────────
-app.use(cors());
+app.use(cors({
+    origin: process.env.CLIENT_URL || '*',
+    credentials: true
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -42,10 +45,7 @@ app.use('/api/upload', uploadRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-if (process.env.NODE_ENV !== 'production') {
-    app.listen(port, () => {
-        console.log(`📚 Book Store Server running on port ${port}`);
-    });
-}
-
-module.exports = app;
+// Start the server (works on Render, Railway, and local dev)
+app.listen(port, () => {
+    console.log(`📚 Book Store Server running on port ${port}`);
+});
