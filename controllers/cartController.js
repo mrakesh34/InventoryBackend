@@ -1,6 +1,8 @@
 const Cart = require('../models/Cart');
 const Book = require('../models/Book');
 
+const MAX_QTY = 5; // Max quantity per book per user
+
 // @desc    Get user's cart
 // @route   GET /api/cart
 // @access  Private
@@ -54,9 +56,13 @@ const addToCart = async (req, res, next) => {
         }
 
         const requestedTotalQty = currentQtyInCart + Number(quantity);
+        const allowedMax = Math.min(MAX_QTY, book.stock ?? 0);
 
-        if (requestedTotalQty > (book.stock ?? 0)) {
-            return res.status(400).json({ error: `Cannot add more units. Only ${book.stock ?? 0} in stock.` });
+        if (requestedTotalQty > allowedMax) {
+            if (book.stock < MAX_QTY) {
+                return res.status(400).json({ error: `Cannot add more. Only ${book.stock} in stock.` });
+            }
+            return res.status(400).json({ error: `You can only purchase a maximum of ${MAX_QTY} copies of a single book.` });
         }
 
         if (!cart) {
@@ -104,8 +110,12 @@ const updateCartItem = async (req, res, next) => {
             return res.status(404).json({ error: 'Book not found' });
         }
 
-        if (quantity > (book.stock ?? 0)) {
-            return res.status(400).json({ error: `Requested quantity exceeds available stock (${book.stock ?? 0})` });
+        const allowedMax = Math.min(MAX_QTY, book.stock ?? 0);
+        if (quantity > allowedMax) {
+            if (book.stock < MAX_QTY) {
+                return res.status(400).json({ error: `Only ${book.stock} in stock.` });
+            }
+            return res.status(400).json({ error: `You can only purchase a maximum of ${MAX_QTY} copies of a single book.` });
         }
 
         const cart = await Cart.findOne({ user: userEmail });

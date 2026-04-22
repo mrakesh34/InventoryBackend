@@ -41,4 +41,23 @@ const adminOnly = (req, res, next) => {
     }
 };
 
-module.exports = { protect, adminOnly };
+
+// Vendor only middleware
+const vendorOnly = (req, res, next) => {
+    if (req.user && req.user.role === 'vendor') {
+        next();
+    } else {
+        res.status(403).json({ error: 'Access denied: Vendors only' });
+    }
+};
+
+// Admin OR Vendor middleware
+const adminOrVendor = (req, res, next) => {
+    if (req.user && (req.user.role === 'admin' || req.user.role === 'vendor')) {
+        next();
+    } else {
+        res.status(403).json({ error: 'Access denied: Admins or Vendors only' });
+    }
+};
+
+module.exports = { protect, adminOnly, vendorOnly, adminOrVendor };

@@ -18,7 +18,15 @@ const orderItemSchema = new mongoose.Schema({
     price: {
         type: Number,
         required: true
-    }
+    },
+    vendorEarning: {
+        type: Number,
+        default: 0,   // 90% of (price × qty) for vendor books
+    },
+    platformFee: {
+        type: Number,
+        default: 0,    // 10% of (price × qty) for vendor books
+    },
 });
 
 const orderSchema = new mongoose.Schema(

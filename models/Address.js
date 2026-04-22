@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const addressSchema = new mongoose.Schema(
     {
         user: {
-            type: String, // Storing email as user identifier
+            type: String,
             required: true,
         },
         name: {
@@ -12,7 +12,7 @@ const addressSchema = new mongoose.Schema(
             trim: true,
         },
         street: {
-            type: String,
+            type: String,   // Flat/House No, Building, Street, Locality
             required: true,
             trim: true,
         },
@@ -27,7 +27,7 @@ const addressSchema = new mongoose.Schema(
             trim: true,
         },
         zip: {
-            type: String,
+            type: String,   // PIN Code (6 digits for India)
             required: true,
             trim: true,
         },
@@ -35,12 +35,18 @@ const addressSchema = new mongoose.Schema(
             type: String,
             required: true,
             trim: true,
-            default: 'US',
+            default: 'India',
         },
         phone: {
             type: String,
+            required: true,
             trim: true,
-        }
+        },
+        isDefault: {
+            type: Boolean,
+            default: false,
+        },
+
     },
     {
         timestamps: true,

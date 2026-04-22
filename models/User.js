@@ -24,8 +24,25 @@ const userSchema = new mongoose.Schema(
         },
         role: {
             type: String,
-            enum: ['user', 'admin'],
+            enum: ['user', 'vendor', 'admin'],
             default: 'user',
+        },
+        phone: {
+            type: String,
+            trim: true,
+            default: '',
+        },
+        vendorStatus: {
+            type: String,
+            enum: ['none', 'pending', 'approved', 'rejected'],
+            default: 'none',
+        },
+        vendorDetails: {
+            businessName: { type: String, trim: true, default: '' },
+            categories: { type: [String], default: [] },
+            estimatedStock: { type: Number, default: 0, min: 0 },
+            description: { type: String, trim: true, default: '' },
+            phone: { type: String, trim: true, default: '' },
         },
     },
     {

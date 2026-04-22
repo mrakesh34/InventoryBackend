@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { uploadFiles } = require('../controllers/uploadController');
-const { protect, adminOnly } = require('../middleware/authMiddleware');
+const { protect, adminOrVendor } = require('../middleware/authMiddleware');
 
 const storage = multer.memoryStorage();
 
@@ -13,10 +13,14 @@ const upload = multer({
   }
 });
 
-// Accepts two file fields: 'image' and 'pdf'
-const cpUpload = upload.fields([{ name: 'image', maxCount: 1 }, { name: 'pdf', maxCount: 1 }]);
+// Accepts three file fields: 'image', 'pdf', and 'gallery'
+const cpUpload = upload.fields([
+  { name: 'image',   maxCount: 1 },
+  { name: 'pdf',     maxCount: 1 },
+  { name: 'gallery', maxCount: 5 },
+]);
 
 // POST /api/upload
-router.post('/', protect, adminOnly, cpUpload, uploadFiles);
+router.post('/', protect, adminOrVendor, cpUpload, uploadFiles);
 
 module.exports = router;

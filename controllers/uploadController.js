@@ -51,6 +51,20 @@ const uploadFiles = async (req, res, next) => {
             uploadedData.bookPDFURL = result.secure_url;
         }
 
+        // 3. Upload Gallery Images (optional, up to 5)
+        if (req.files.gallery && req.files.gallery.length > 0) {
+            const galleryURLs = await Promise.all(
+                req.files.gallery.map(file =>
+                    streamUpload(file.buffer, {
+                        folder: 'book_gallery',
+                        resource_type: 'image',
+                        public_id: file.originalname.split('.')[0] + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+                    }).then(r => r.secure_url)
+                )
+            );
+            uploadedData.galleryImages = galleryURLs;
+        }
+
         res.status(200).json(uploadedData);
     } catch (error) {
         console.error('Stream Upload Error:', error);
