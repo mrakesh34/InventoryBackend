@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const {
-    seedBooks, getAllBooks, getBookById,
+    getAllBooks, getBookById,
     createBook, updateBook, deleteBook,
     updateBookStock, getMyBooks, getLowStockBooks,
     getInventoryValuation, rateBook,
@@ -11,7 +11,6 @@ const {
 const { protect, adminOnly, adminOrVendor } = require('../middleware/authMiddleware');
 
 // Public routes
-router.get('/seed', seedBooks);
 router.get('/', getAllBooks);
 
 // ⚠️ Named routes MUST come before /:id wildcard

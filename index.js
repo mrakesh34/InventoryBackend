@@ -15,7 +15,7 @@ connectDB().then(() => {
     seedAdminUser();
 });
 
-// ─── Global Middleware ────────────────────────────────────────────────────────
+// global middleware
 const allowedOrigins = [
     process.env.CLIENT_URL,
     'http://localhost:5173',
@@ -36,9 +36,9 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// ─── Routes ──────────────────────────────────────────────────────────────────
+// routes
 app.get('/', (req, res) => {
-    res.json({ message: 'Book Store API is running 🚀', version: '3.0.0' });
+    res.json({ message: 'Book Store API is running', version: '3.0.0' });
 });
 
 const cartRoutes         = require('./routes/cartRoutes');
@@ -68,11 +68,11 @@ app.use('/api/waitlist',       waitlistRoutes);
 app.use('/api/settlements',    settlementRoutes);
 
 
-// ─── Error Handling Middleware (must be last) ─────────────────────────────────
+// error handling (must be last)
 app.use(notFound);
 app.use(errorHandler);
 
-// Start the server
+// start the server
 app.listen(port, () => {
-    console.log(`📚 Book Store Server running on port ${port}`);
+    console.log(`Book Store Server running on port ${port}`);
 });

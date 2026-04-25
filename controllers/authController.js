@@ -14,7 +14,7 @@ const generateToken = (user) =>
         { expiresIn: '7d' }
     );
 
-// ─── Seed Admin ───────────────────────────────────────────────────────────────
+// initialize admin account if it doesn't exist
 const seedAdminUser = async () => {
     try {
         const hashedPassword = bcrypt.hashSync(ADMIN_PASSWORD, 10);
@@ -27,22 +27,22 @@ const seedAdminUser = async () => {
                 role: 'admin',
                 vendorStatus: 'none',
             });
-            console.log(`✅ Admin seeded: ${ADMIN_EMAIL}`);
+            console.log(`Admin account verified: ${ADMIN_EMAIL}`);
         } else {
-            // Always enforce admin role and reset password to env-configured value
+            // enforce admin role and password
             await User.findByIdAndUpdate(existing._id, {
                 role: 'admin',
                 vendorStatus: 'none',
                 password: hashedPassword,
             });
-            console.log(`✅ Admin enforced (role + password): ${ADMIN_EMAIL}`);
+            console.log(`Admin enforced: ${ADMIN_EMAIL}`);
         }
     } catch (err) {
-        console.error('❌ Admin seed error:', err.message);
+        console.error('Failed to initialize admin:', err.message);
     }
 };
 
-// ─── Signup (requires verified OTP) ──────────────────────────────────────────
+// register new user
 const signup = async (req, res, next) => {
     try {
         const { name, email, password, registerAsVendor, vendorDetails } = req.body;
@@ -57,7 +57,7 @@ const signup = async (req, res, next) => {
             res.status(400); throw new Error('This email is reserved. Please use a different email.');
         }
 
-        // ─── Verify that email has been OTP-verified ─────────────────────
+        // check if they verified otp first
         const verifiedOtp = await Otp.findOne({
             email: email.toLowerCase().trim(),
             verified: true,
@@ -89,7 +89,6 @@ const signup = async (req, res, next) => {
 
         const user = await User.create(userData);
 
-        // Clean up OTP records for this email
         await Otp.deleteMany({ email: email.toLowerCase().trim() });
 
         const token = generateToken(user);
@@ -105,7 +104,6 @@ const signup = async (req, res, next) => {
     }
 };
 
-// ─── Login ────────────────────────────────────────────────────────────────────
 const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
@@ -128,7 +126,6 @@ const login = async (req, res, next) => {
     }
 };
 
-// ─── Get Me ───────────────────────────────────────────────────────────────────
 const getMe = async (req, res, next) => {
     try {
         const user = await User.findById(req.user._id);
