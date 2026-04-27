@@ -29,8 +29,9 @@ const seedAdminUser = async () => {
             });
             console.log(`Admin account verified: ${ADMIN_EMAIL}`);
         } else {
-            // enforce admin role and password
+            // enforce admin role, name and password
             await User.findByIdAndUpdate(existing._id, {
+                name: 'Admin',
                 role: 'admin',
                 vendorStatus: 'none',
                 password: hashedPassword,
