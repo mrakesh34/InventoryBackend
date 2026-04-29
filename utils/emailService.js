@@ -1,13 +1,21 @@
 const nodemailer = require('nodemailer');
 
 // Create reusable transporter using Gmail SMTP
+// Uses explicit host + port 587 (STARTTLS) instead of service:'gmail'
+// because many cloud hosts (Render, Railway) block port 465 (SSL).
 const createTransporter = () => {
     return nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,       // true = port 465 (often blocked), false = port 587 + STARTTLS
+        requireTLS: true,    // force STARTTLS upgrade
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_APP_PASSWORD,
         },
+        connectionTimeout: 10000,  // 10s — fail fast with a clear error
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
     });
 };
 
