@@ -1,28 +1,37 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
+const { promisify } = require('util');
 
-// Create reusable transporter using Gmail SMTP
-// Uses explicit host + port 587 (STARTTLS) instead of service:'gmail'
-// because many cloud hosts (Render, Railway) block port 465 (SSL).
-const createTransporter = () => {
-    return nodemailer.createTransport({
-        host: 'smtp.gmail.com',
+const dnsLookup = promisify(dns.lookup);
+
+// Resolve smtp.gmail.com to an IPv4 address explicitly.
+// Render's infrastructure resolves hostnames to IPv6 by default,
+// but cannot route outbound IPv6 traffic — causing ENETUNREACH.
+const resolveIPv4 = async (hostname) => {
+    const result = await dnsLookup(hostname, { family: 4 });
+    return result.address;
+};
+
+// Send OTP email with a professional template
+const sendOtpEmail = async (toEmail, otp) => {
+    const smtpIp = await resolveIPv4('smtp.gmail.com');
+
+    const transporter = nodemailer.createTransport({
+        host: smtpIp,              // raw IPv4 address, bypasses IPv6 DNS
         port: 587,
-        secure: false,       // false = port 587 + STARTTLS
+        secure: false,             // port 587 uses STARTTLS, not SSL
         requireTLS: true,
-        family: 4,           // force IPv4 — Render does not support outbound IPv6
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_APP_PASSWORD,
+        },
+        tls: {
+            servername: 'smtp.gmail.com', // required for TLS cert validation when using raw IP
         },
         connectionTimeout: 10000,
         greetingTimeout: 10000,
         socketTimeout: 15000,
     });
-};
-
-// Send OTP email with a professional template
-const sendOtpEmail = async (toEmail, otp) => {
-    const transporter = createTransporter();
 
     const mailOptions = {
         from: `"Book Vault" <${process.env.EMAIL_USER}>`,
