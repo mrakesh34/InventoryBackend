@@ -1,4 +1,8 @@
 require('dotenv').config();
+// Force IPv4 DNS resolution globally — fixes ENETUNREACH on Render (IPv6 not supported for outbound SMTP)
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first');
+
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
