@@ -7,13 +7,14 @@ const createTransporter = () => {
     return nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 587,
-        secure: false,       // true = port 465 (often blocked), false = port 587 + STARTTLS
-        requireTLS: true,    // force STARTTLS upgrade
+        secure: false,       // false = port 587 + STARTTLS
+        requireTLS: true,
+        family: 4,           // force IPv4 — Render does not support outbound IPv6
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_APP_PASSWORD,
         },
-        connectionTimeout: 10000,  // 10s — fail fast with a clear error
+        connectionTimeout: 10000,
         greetingTimeout: 10000,
         socketTimeout: 15000,
     });
